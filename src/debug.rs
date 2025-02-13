@@ -20,6 +20,7 @@ impl Chunk {
         match code {
             OpCode::Return => Chunk::simple_instruction("OP_RETURN", pos),
             OpCode::Constant => self.constant_instruction("OP_CONSTANT", pos),
+            OpCode::ConstantLong => self.constant_instruction("OP_CONSTANT_LONG", pos),
         }
     }
 
@@ -29,11 +30,23 @@ impl Chunk {
     }
 
     fn constant_instruction(&self, name: &str, pos: usize) -> usize {
-        let constant = self.code[pos + 1] as usize;
+        let op : OpCode = self.code[pos].into();
+        let (constant, offset) = match op {
+            OpCode::Constant => (self.code[pos + 1].into(), 2),
+            OpCode::ConstantLong => {
+                let mut constant: usize = self.code[pos + 1].into();
+                constant <<= 8;
+                constant |= self.code[pos + 2] as usize;
+                constant <<= 8;
+                constant |= self.code[pos + 3] as usize;
+                (constant, 4)
+            }
+            _ => unreachable!()
+        };
         print!("{:16} {} ", name, constant);
         Chunk::print_value(self.constants[constant]);
         println!();
-        pos + 2
+        pos + offset
     }
 
     fn print_value(value: Value) {

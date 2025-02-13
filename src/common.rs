@@ -3,6 +3,7 @@
 pub enum OpCode {
     Return = 0,
     Constant = 1,
+    ConstantLong = 2,
 }
 
 pub type Value = f64;
@@ -38,6 +39,7 @@ impl From<u8> for OpCode {
         match byte {
             0 => OpCode::Return,
             1 => OpCode::Constant,
+            2 => OpCode::ConstantLong,
             _ => unreachable!()
         }
     }
